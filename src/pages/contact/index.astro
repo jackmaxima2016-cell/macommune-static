@@ -1,0 +1,109 @@
+---
+// Page Contact — formulaire simple (macommune.prim.net, expert immobilier)
+import Base from '../../layouts/Base.astro';
+
+const TITLE = 'Contact — Ma commune PRIM.NET';
+const DESC = "Contactez Ma commune : questions, demandes d'information et conseils en immobilier. Réponse sous 24–48 h.";
+const CANONICAL = 'https://macommune.prim.net/contact/';
+---
+
+<Base title={TITLE} description={DESC} canonical={CANONICAL}>
+  <header class="entry-header">
+    <h1 class="entry-title">Contact</h1>
+  </header>
+
+  <section class="simple-contact" aria-label="Formulaire de contact">
+    <div class="sc-intro">
+      <p class="sc-kicker">Ma commune — expert immobilier</p>
+      <h2 class="sc-title">Écrivez-nous</h2>
+      <p>
+        Une question sur une annonce, un conseil d'achat ou de location, un
+        partenariat&nbsp;? Laissez-nous un message, nous répondons sous
+        24–48&nbsp;h.
+      </p>
+    </div>
+
+    <form id="contact-form" class="sc-form" method="POST" novalidate>
+      <input type="text" name="_honey" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true" />
+      <label class="sc-field">
+        <span>Nom</span>
+        <input type="text" name="nom" required autocomplete="name" />
+      </label>
+      <label class="sc-field">
+        <span>Email</span>
+        <input type="email" name="email" required autocomplete="email" />
+      </label>
+      <label class="sc-field">
+        <span>Message</span>
+        <textarea name="message" rows="6" required></textarea>
+      </label>
+      <div class="cf-turnstile" data-sitekey="PRIM_TURNSTILE_SITE_KEY" data-theme="light"></div>
+      <p class="sc-error" id="sc-error" hidden></p>
+      <button type="submit" class="sc-submit">Envoyer</button>
+    </form>
+
+    <div class="sc-success" id="sc-success" hidden>
+      <h3>Message envoyé ✅</h3>
+      <p>Merci ! Nous revenons vers vous sous 24–48&nbsp;h.</p>
+      <p><a href="/">← Retour à l'accueil</a></p>
+    </div>
+  </section>
+
+  <script is:inline>
+    (function () {
+      var form = document.getElementById('contact-form');
+      var errEl = document.getElementById('sc-error');
+      var okEl = document.getElementById('sc-success');
+      if (!form) return;
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        errEl.hidden = true;
+        var data = Object.fromEntries(new FormData(form).entries());
+        try {
+          var r = await fetch('/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
+          var out = await r.json().catch(function () { return {}; });
+          if (out.success === 'true') {
+            form.hidden = true;
+            okEl.hidden = false;
+          } else {
+            errEl.textContent = out.message || 'Erreur, réessayez.';
+            errEl.hidden = false;
+          }
+        } catch (err) {
+          errEl.textContent = 'Erreur réseau, réessayez.';
+          errEl.hidden = false;
+        }
+      });
+    })();
+  </script>
+
+  <style is:global>
+    .simple-contact { max-width: 720px; margin: 0 auto; }
+    .sc-intro { margin-bottom: 24px; }
+    .sc-kicker { text-transform: uppercase; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: var(--accent); margin: 0 0 6px; }
+    .sc-title { font-size: 24px; margin: 0 0 10px; }
+    .sc-intro p { font-size: 15px; line-height: 1.65; color: #333; }
+    .sc-form { display: grid; gap: 14px; padding: 20px; border: 1px solid #c8c8c8; border-radius: 10px; background: #fff; }
+    .sc-field { display: grid; gap: 5px; }
+    .sc-field span { font-size: 13px; font-weight: 700; color: #222; }
+    .sc-field input, .sc-field textarea {
+      font: inherit; padding: 10px 12px; border: 1px solid #9a9a9a; border-radius: 6px;
+      background: #fff; color: #111; width: 100%; box-sizing: border-box;
+    }
+    .sc-field input:focus, .sc-field textarea:focus { outline: 3px solid #0a5fd0; outline-offset: 1px; border-color: #0a5fd0; }
+    .cf-turnstile { margin: 4px 0; }
+    .sc-submit {
+      font: inherit; font-weight: 800; cursor: pointer; padding: 12px 22px;
+      background: var(--accent); color: #fff; border: 0; border-radius: 6px; justify-self: start;
+    }
+    .sc-submit:hover { filter: brightness(1.08); }
+    .sc-error { font-size: 13.5px; font-weight: 600; color: #b00020; margin: 0; }
+    .sc-success { padding: 20px; border: 1px solid #2e7d32; border-radius: 10px; background: #f3faf3; }
+    .sc-success h3 { margin: 0 0 8px; }
+    .hp-field { position: absolute; left: -9999px; opacity: 0; }
+  </style>
+</Base>
